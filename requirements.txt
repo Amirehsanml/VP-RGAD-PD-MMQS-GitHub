@@ -1,0 +1,11 @@
+torch
+transformers
+huggingface-hub
+pandas
+numpy
+scikit-learn
+rouge-score
+nltk
+tqdm
+sentencepiece
+protobuf
