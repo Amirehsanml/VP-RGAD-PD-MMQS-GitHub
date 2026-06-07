@@ -64,3 +64,11 @@ bash scripts/eval_final_model.sh
 ## Final Decision
 
 G4 ROUGE-aware preference fine-tuning was tested but did not improve held-out test performance, so the final model remains G3 staged / VP-RGAD-PD.
+
+## Extra Evaluation Metrics
+
+BLEU, METEOR, and BERTScore can be computed with:
+
+```bash
+python scripts/compute_test_extra_metrics.py --csv outputs/G3_test_no_rgad.csv --ref_col actual --pred_col predicted --bert_model microsoft/deberta-xlarge-mnli --device cuda
+```
