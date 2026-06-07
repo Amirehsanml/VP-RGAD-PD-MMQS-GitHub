@@ -70,5 +70,5 @@ G4 ROUGE-aware preference fine-tuning was tested but did not improve held-out te
 BLEU, METEOR, and BERTScore can be computed with:
 
 ```bash
-python scripts/compute_test_extra_metrics.py --csv outputs/G3_test_no_rgad.csv --ref_col actual --pred_col predicted --bert_model microsoft/deberta-xlarge-mnli --device cuda
+python scripts/compute_test_extra_metrics.py --csv results/predictions/G3_test_no_rgad.csv --ref_col actual --pred_col predicted --bert_model microsoft/deberta-xlarge-mnli --device cuda
 ```
