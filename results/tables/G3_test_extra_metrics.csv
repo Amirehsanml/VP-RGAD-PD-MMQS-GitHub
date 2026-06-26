@@ -1,2 +1,0 @@
-num_samples,BLEU,METEOR,BERTScore_P,BERTScore_R,BERTScore_F1,bert_model,input_csv
-453,27.063165122019477,43.5603516634973,79.31604385375977,78.82934808731079,79.0108323097229,microsoft/deberta-xlarge-mnli,outputs/G3_test_no_rgad.csv
