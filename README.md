@@ -1,74 +1,87 @@
-# VP-RGAD-PD for Multimodal Clinical Question Summarization
+# VP-RGAD-PD-MMQS
 
-This repository contains the cleaned implementation of VP-RGAD-PD, a staged multimodal BART-based framework for multimodal clinical question summarization on MMQS.
+This repository contains the code for the **VP-RGAD-PD** framework for multimodal clinical question summarization.
 
-## Final Model
+## Overview
 
-The final selected model is G3 staged / VP-RGAD-PD.
+The project follows a three-stage training workflow:
 
-Training strategy:
+**Stage 1 — Clinical Backbone Adaptation**  
+Text-only adaptation of a pretrained BART backbone on the MMQS clinical summarization task.
 
-1. Stage 1: BART backbone adaptation. facebook/bart-base is fine-tuned on the MMQS training split.
-2. Stage 2: Visual Prefix Adapter. Pre-extracted image embeddings are mapped into visual prefix tokens and prepended to BART encoder embeddings.
-3. Stage 3: VP-RGAD-PD. The visual-prefix model is fine-tuned using label smoothing, sliding-window unlikelihood, and Reward-Guided Anti-Degeneration Preference Distillation.
+**Stage 2 — Dual-Stream Visual Prefix Learning**  
+A lightweight dual-stream visual adapter processes:
+- a pre-computed visual embedding stream
+- a raw-pixel visual stream
 
-## Final Test Result
+Each stream is processed separately, then fused into learnable visual prefix tokens that are prepended to the text embeddings before BART encoding.
 
-| Model | ROUGE-1 | ROUGE-2 | ROUGE-L |
-|---|---:|---:|---:|
-| VP-RGAD-PD | 57.0422 | 32.2543 | 48.7893 |
+**Stage 3 — Degeneration-Aware Refinement**  
+The Stage 2 checkpoint is further refined with:
+- label smoothing
+- sliding-window unlikelihood
+- RGAD preference distillation
+- repetition-aware decoding constraints
 
-## Fixed Split
+## Repository Structure
 
-All stages use the same fixed split with seed 42.
+- `code/` — Python source code for training and evaluation
+- `scripts/` — Bash scripts for running stage-wise training and evaluation
+- `docs/` — Notes and documentation
+- `splits/` — Fixed train/validation/test split files for reproducibility
+- `README.md` — Project overview and usage
+- `requirements.txt` — Python dependencies
 
-| Split | Size |
-|---|---:|
-| Train | 2412 |
-| Validation | 150 |
-| Test | 453 |
+## What is intentionally not included
 
-Split index files are provided under splits/.
+This repository does **not** include:
+- raw dataset files
+- trained checkpoints
+- logs
+- generated outputs
+- intermediate experiments
+- large artifacts or temporary files
 
-## Data
+Those files should be stored outside the repository and referenced through local paths.
 
-Raw datasets and image embeddings are not included in this repository.
+## External Paths Expected by the Code
 
-See docs/DATA_AVAILABILITY.md for paper links, Google Drive dataset links, and expected local file names.
+The code expects the following external resources to exist on disk:
 
-Expected local files:
+- MMQS dataset CSV
+- image folder for raw visual input
+- pre-computed visual embedding files
+- stage checkpoints produced during training
 
-- data/multimodal_final_updated.csv
-- data/vgg_image_vector.pt
+These paths are configured through environment variables in the run scripts.
 
-## Checkpoints
+## Training Workflow
 
-Model checkpoints are not included in git.
+### Stage 1
+Train the text-only BART backbone on the MMQS dataset.
 
-Expected local checkpoint paths after training:
+### Stage 2
+Train the dual-stream visual prefix module using:
+- pre-computed embeddings
+- raw pixels from images
 
-- artifacts/checkpoints/BART_backbone_stage1/
-- artifacts/checkpoints/G2_visual_prefix/
-- artifacts/checkpoints/G3_VP_RGAD_PD_final/
-
-Use GitHub Releases, Hugging Face Hub, or another external storage service if trained weights are distributed separately.
+### Stage 3
+Load the Stage 2 checkpoint and refine the model with degeneration-aware training objectives.
 
 ## Evaluation
 
-After preparing the data and checkpoints locally:
+Evaluation is performed with the trained Stage 3 checkpoint.  
+Ablation comparisons may include:
+- full multimodal input
+- no image input
+- shuffled embedding input
 
-```bash
-bash scripts/eval_final_model.sh
-```
+## Reproducibility
 
-## Final Decision
+The `splits/` directory is kept in the repository so that the same train/validation/test partition can be reused across runs.
 
-G4 ROUGE-aware preference fine-tuning was tested but did not improve held-out test performance, so the final model remains G3 staged / VP-RGAD-PD.
+## Notes
 
-## Extra Evaluation Metrics
-
-BLEU, METEOR, and BERTScore can be computed with:
-
-```bash
-python scripts/compute_test_extra_metrics.py --csv results/predictions/G3_test_no_rgad.csv --ref_col actual --pred_col predicted --bert_model microsoft/deberta-xlarge-mnli --device cuda
-```
+- The main backbone for the paper is **BART**.
+- The repository is organized to reflect the final architecture used in the paper.
+- The code is intended to be run with local data and local checkpoints outside the repository.
